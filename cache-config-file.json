@@ -1,0 +1,32 @@
+{
+  "realmCache": {
+    "enabled": true,
+    "eviction": "LRU",
+    "maxEntries": 1000,
+    "expiration": 3600
+  },
+  "authenticationSessionsCache": {
+    "enabled": true,
+    "eviction": "LRU",
+    "maxEntries": 500,
+    "expiration": 300
+  },
+  "userCache": {
+    "enabled": true,
+    "eviction": "LRU",
+    "maxEntries": 1000,
+    "expiration": 3600
+  },
+  "clientCache": {
+    "enabled": true,
+    "eviction": "LRU",
+    "maxEntries": 1000,
+    "expiration": 3600
+  },
+  "offlineSessionCache": {
+    "enabled": true,
+    "eviction": "LRU",
+    "maxEntries": 500,
+    "expiration": 86400
+  }
+}
