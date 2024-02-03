@@ -1,0 +1,38 @@
+services:
+  keycloak:
+    container_name: keycloak2
+    restart: always
+    build:
+      context: .
+      args:
+        KEYCLOAK_VERSION: 22.0.3
+    image: my-keycloak:1.1.0
+    command: start-dev
+#    depends_on:
+#      - "keycloak-mysql"
+    environment:
+      JAVA_OPTS_APPEND: -Dkeycloak.profile.feature.upload_scripts=enabled
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://192.168.2.151:8306/keycloak
+      KC_DB_USERNAME: root
+      KC_DB_PASSWORD: root
+#      KC_HOSTNAME: localhost
+      KC_HEALTH_ENABLED: 'true'
+      KC_HTTP_ENABLED: 'true'
+      KC_METRICS_ENABLED: 'true'
+#      KC_HOSTNAME_URL: http://keycloak.com.au:8090
+      KC_PROXY: reencrypt
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_CACHE: ispn
+      KC_CACHE_CONFIG_FILE: cache-ispn.xml
+    ports:
+      - "8090:8080"
+      - "8787:8787" # debug port
+    networks:
+      - local
+
+networks:
+  local:
+    name: local
+    driver: bridge
