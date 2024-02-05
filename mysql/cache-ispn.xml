@@ -6,7 +6,7 @@
     <jgroups>
         <stack name="jdbc-ping-tcp" extends="tcp">
             <JDBC_PING connection_driver="com.mysql.cj.jdbc.Driver"
-                       connection_url="jdbc:mysql://192.168.2.151:8306/keycloak"
+                       connection_url="jdbc:mysql://mysql/keycloak"
                        connection_username="root"
                        connection_password="root"
                        initialize_sql="CREATE TABLE IF NOT EXISTS JGROUPSPING (own_addr varchar(200) NOT NULL, cluster_name varchar(200) NOT NULL, ping_data BLOB, constraint PK_JGROUPSPING PRIMARY KEY (own_addr, cluster_name));"
