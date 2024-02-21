@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   postgres:
-    container_name: db
+    container_name: postgres_keycloak
     image: "postgres:14.4"
     restart: always
     healthcheck:
@@ -40,7 +40,7 @@ services:
     build:
       context: .
       args:
-        KEYCLOAK_VERSION: 22.0.3
+        KEYCLOAK_VERSION: 23.0.6
     image: my-keycloak:1.0.0
     command: start-dev
     depends_on:

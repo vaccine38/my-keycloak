@@ -1,0 +1,45 @@
+policy-enforcer:
+  realm: fandelo
+  auth-server-url: http://localhost:8090
+  resource: fandelo_client
+  credentials:
+    secret: c3OerSejhc43CIwZKHwVpBQCHy8AJrVQ
+  http-method-as-scope: false
+  paths:
+    - path: /books/list
+      methods:
+        - method: POST
+          scopes:
+            - scp::read
+    - path: /books/{id}
+      methods:
+        - method: GET
+          scopes:
+            - scp::read
+        - method: DELETE
+          scopes:
+            - scp::write
+    - path: /books/metadata
+      methods:
+        - method: GET
+          scopes:
+            - scp::read
+    - path: /books
+      methods:
+        - method: PUT
+          scopes:
+            - scp::write
+        - method: POST
+          scopes:
+            - scp::write
+    - path: /permissions/list
+      methods:
+        - method: GET
+          scopes:
+            - scp::read
+    - path: /permissions/associate
+      methods:
+        - method: POST
+          scopes:
+            - scp::write
+    - path: /schools/*

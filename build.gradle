@@ -1,0 +1,64 @@
+plugins {
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id 'io.spring.dependency-management' version "${springDependenciesVersion}"
+    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += '-parameters'
+    options.compilerArgs += ['-Xlint:deprecation']
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    compileOnly "org.keycloak:keycloak-servlet-filter-adapter:${keycloakVersion}"
+    implementation "org.keycloak:keycloak-spring-boot-starter:${keycloakVersion}"
+    implementation "org.keycloak:keycloak-admin-client:${keycloakVersion}"
+}
+
+publishing {
+//    publications {
+//        mavenJava(MavenPublication) {
+//            groupId 'com.keycloak.springmvc'
+//            artifactId 'spring'
+//            version '0.1'
+//            from components.java
+//        }
+//    }
+    repositories {
+        mavenLocal()
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
