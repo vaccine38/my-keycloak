@@ -18,6 +18,8 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.ClientResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
+import org.keycloak.representations.idm.authorization.PolicyEvaluationRequest;
+import org.keycloak.representations.idm.authorization.PolicyEvaluationResponse;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.keycloak.representations.idm.authorization.ScopePermissionRepresentation;
@@ -57,8 +59,8 @@ public class PermissionController {
 		}
 		Jwt jwt = (Jwt) authentication.getPrincipal();
 		String username = jwt.getClaim("preferred_username");
-		String policyId = getPolicyIdByUser(username);
-		Assert.notNull(policyId, "Policy not found");
+//		String policyId = getPolicyIdByUser(username);
+//		Assert.notNull(policyId, "Policy not found");
 		
 		// get keycloak config
 		Keycloak keycloak = keycloakInstance.getKeycloakInstance();
@@ -67,61 +69,119 @@ public class PermissionController {
 		String clientId = keycloakProperties.getAdminClientUuid();
 		ClientResource clientResource = realmResource.clients().get(clientId);
 		
-		Map<String, KeycloakResource> resourceMap = new HashMap<>();
-		// get all permissions and their scopes, resources
-		clientResource.authorization()
-			.policies()
-			.policies()
+		List<ResourceRepresentation> resourceLst =
+			clientResource.authorization().resources().resources();
+//		resourceLst = resourceLst.stream()
+//			.filter(s -> s.getScopes() != null && !s.getScopes().isEmpty())
+//			.toList();
+		String keycloakUserId = getKeycloakIdByUser(username);
+		PolicyEvaluationResponse evaluationRes =
+			evaluatePermission(clientResource, keycloakUserId, resourceLst);
+		List<String> resourceOrScopePermitIds = new ArrayList<>();
+		Optional.ofNullable(evaluationRes.getResults())
+			.orElse(new ArrayList<>())
 			.stream()
-			.filter(s -> s.getName().contains(PERMISSION_PREFIX))
-			.forEach(per -> {
-				List<ScopeRepresentation> scopes = clientResource.authorization()
-					.permissions()
-					.scope()
-					.findById(per.getId())
-					.scopes();
-				ScopeRepresentation scope = scopes != null && !scopes.isEmpty() ? scopes.getFirst() : null;
-				
-				List<ResourceRepresentation> resources = clientResource.authorization()
-					.permissions()
-					.scope()
-					.findById(per.getId())
-					.resources();
-				Assert.notEmpty(resources, "Resource not found");
-				ResourceRepresentation resource = resources.getFirst();
-				
-				KeycloakResource keycloakResource =
-					Optional.ofNullable(resourceMap.get(resource.getId()))
-						.orElse(new KeycloakResource(resource.getId(), resource.getName(),
-							resource.getDisplayName()));
-				if (scope != null) {
-					KeycloakScope keycloakScope = new KeycloakScope(
-						scope.getId(), scope.getName(), scope.getDisplayName(), per.getId());
-					keycloakResource.addScopes(keycloakScope);
+			.filter(s -> s.getStatus() != null && "PERMIT".equals(s.getStatus().toString()))
+			.forEach(s -> {
+				List<ScopeRepresentation> allowedScopes = s.getAllowedScopes();
+				if (allowedScopes != null && !allowedScopes.isEmpty()) {
+					allowedScopes.stream()
+						.map(sc -> s.getResource().getId() + sc.getId())
+						.forEach(resourceOrScopePermitIds::add);
 				} else {
-					keycloakResource.setPermissionId(per.getId());
+					resourceOrScopePermitIds.add(s.getResource().getId());
 				}
-				
-				resourceMap.put(resource.getId(), keycloakResource);
 			});
 		
-		// get user permissions by his policy
-		List<String> myPermissions = clientResource.authorization()
-			.permissions()
-			.scope()
-			.findById(policyId)
-			.dependentPolicies()
-			.stream()
-			.map(PolicyRepresentation::getId)
+		List<KeycloakResource> keycloakResources = resourceLst.stream()
+			.map(resource -> {
+				KeycloakResource ks = new KeycloakResource(resource.getId(), resource.getName(),
+					resource.getDisplayName());
+				
+				Set<ScopeRepresentation> scopes = resource.getScopes();
+				scopes.stream()
+					.map(s -> new KeycloakScope(s.getId(), s.getName(), s.getDisplayName()))
+					.forEach(s -> {
+						s.setStatus(
+							resourceOrScopePermitIds.contains(resource.getId() + s.getId()) ?
+								"PERMIT" : "DENY");
+						ks.addScopes(s);
+					});
+				if (scopes.isEmpty()) {
+					ks.setStatus(resourceOrScopePermitIds.contains(resource.getId()) ? "PERMIT" : "DENY");
+				}
+				return ks;
+			})
 			.toList();
 		
-		List<KeycloakResource> resourceList = resourceMap.values().stream().toList();
-		KeycloakResponse response = new KeycloakResponse(resourceList, myPermissions);
+		KeycloakResponse response = new KeycloakResponse(keycloakResources, null);
 		return ResponseEntity.ok(response);
+
+//		Map<String, KeycloakResource> resourceMap = new HashMap<>();
+//		// get all permissions and their scopes, resources
+//		clientResource.authorization()
+//			.policies()
+//			.policies()
+//			.stream()
+//			.filter(s -> s.getName().contains(PERMISSION_PREFIX))
+//			.forEach(per -> {
+//				List<ScopeRepresentation> scopes = clientResource.authorization()
+//					.permissions()
+//					.scope()
+//					.findById(per.getId())
+//					.scopes();
+//				ScopeRepresentation scope = scopes != null && !scopes.isEmpty() ? scopes.getFirst() : null;
+//
+//				List<ResourceRepresentation> resources = clientResource.authorization()
+//					.permissions()
+//					.scope()
+//					.findById(per.getId())
+//					.resources();
+//				Assert.notEmpty(resources, "Resource not found");
+//				ResourceRepresentation resource = resources.getFirst();
+//
+//				KeycloakResource keycloakResource =
+//					Optional.ofNullable(resourceMap.get(resource.getId()))
+//						.orElse(new KeycloakResource(resource.getId(), resource.getName(),
+//							resource.getDisplayName()));
+//				if (scope != null) {
+//					KeycloakScope keycloakScope = new KeycloakScope(
+//						scope.getId(), scope.getName(), scope.getDisplayName(), per.getId());
+//					keycloakResource.addScopes(keycloakScope);
+//				} else {
+//					keycloakResource.setPermissionId(per.getId());
+//				}
+//
+//				resourceMap.put(resource.getId(), keycloakResource);
+//			});
+//
+//		// get user permissions by his policy
+//		List<String> myPermissions = clientResource.authorization()
+//			.permissions()
+//			.scope()
+//			.findById(policyId)
+//			.dependentPolicies()
+//			.stream()
+//			.map(PolicyRepresentation::getId)
+//			.toList();
+//
+//		List<KeycloakResource> resourceList = resourceMap.values().stream().toList();
+//		KeycloakResponse response = new KeycloakResponse(resourceList, myPermissions);
+//		return ResponseEntity.ok(response);
+	}
+	
+	private PolicyEvaluationResponse evaluatePermission(ClientResource clientResource,
+	                                                    String keycloakUserId,
+	                                                    List<ResourceRepresentation> resourceList) {
+		PolicyEvaluationRequest evaluationRequest = new PolicyEvaluationRequest();
+		evaluationRequest.setUserId(keycloakUserId);
+		evaluationRequest.setResources(resourceList);
+		return clientResource.authorization().policies().evaluate(evaluationRequest);
 	}
 	
 	@PostMapping("/associate")
-	public ResponseEntity<Object> associatePermission(@RequestBody KeycloakAssociatePermissionRequest request) {
+	public ResponseEntity<Object> associatePermission(
+		@RequestBody KeycloakAssociatePermissionRequest request) {
 		// get user context
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null || !authentication.isAuthenticated()) {
@@ -216,6 +276,15 @@ public class PermissionController {
 		return policyMap.get(userName);
 	}
 	
+	private String getKeycloakIdByUser(String userName) {
+		Map<String, String> policyMap = new HashMap<>();
+		policyMap.put("chinhnq", "664f67c1-446d-49e0-85a1-4f9b5fbc4e66");
+		policyMap.put("longdk", "4ad24584-e1cd-4ab3-b109-37774f180ce8");
+		policyMap.put("anhho", "b25675a4-bc97-4d5e-867c-790146bc98e0");
+		policyMap.put("nhungdo", "b9149390-919f-45ec-ab8c-88a9ce78a987");
+		return policyMap.get(userName);
+	}
+	
 	@Data
 	@NoArgsConstructor
 	static class KeycloakAssociatePermissionRequest {
@@ -252,11 +321,10 @@ public class PermissionController {
 	@EqualsAndHashCode(callSuper = true)
 	@NoArgsConstructor
 	static class KeycloakScope extends KeycloakBasic {
-		private String permissionId;
+		private String status;
 		
-		public KeycloakScope(String id, String name, String displayName, String permissionId) {
+		public KeycloakScope(String id, String name, String displayName) {
 			super(id, name, displayName);
-			this.permissionId = permissionId;
 		}
 	}
 	
@@ -265,7 +333,7 @@ public class PermissionController {
 	@NoArgsConstructor
 	static class KeycloakResource extends KeycloakBasic {
 		private List<KeycloakScope> scopes;
-		private String permissionId;
+		private String status;
 		
 		public void addScopes(KeycloakScope scope) {
 			List<KeycloakScope> temps = scopes != null ? scopes : new ArrayList<>();
