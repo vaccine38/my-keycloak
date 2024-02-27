@@ -33,4 +33,7 @@ policy-enforcer:
         - method: POST
           scopes:
             - scp::write
+        - method: PUT
+          scopes:
+            - scp::write
     - path: /schools/*

@@ -3,6 +3,8 @@ package com.keycloak.springmvc.config;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.resource.ClientResource;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,5 +25,16 @@ public class KeycloakInstance {
 				.build();
 		}
 		return keycloak;
+	}
+	
+	public RealmResource getRealmResource() {
+		String realm = keycloakProperties.getRealm();
+		return getKeycloakInstance().realm(realm);
+	}
+	
+	public ClientResource getClientResource() {
+		RealmResource realmResource = getRealmResource();
+		String clientId = keycloakProperties.getAdminClientUuid();
+		return realmResource.clients().get(clientId);
 	}
 }
