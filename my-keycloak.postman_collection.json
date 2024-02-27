@@ -1,0 +1,971 @@
+{
+	"info": {
+		"_postman_id": "ae199aa5-7818-479e-882d-b529997b183e",
+		"name": "my-keycloak",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4766155"
+	},
+	"item": [
+		{
+			"name": "Keycloak get token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();",
+							"pm.environment.set(\"KEYCLOAK_TOKEN\", jsonData.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "hieuxit",
+							"description": "chinhnq",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "hieuxit",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "{{KC_CLIENT_SERCRET}}",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "{{KC_CLIENT_ID}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{KC_HOST}}/realms/{{KC_REALM}}/protocol/openid-connect/token",
+					"host": [
+						"{{KC_HOST}}"
+					],
+					"path": [
+						"realms",
+						"{{KC_REALM}}",
+						"protocol",
+						"openid-connect",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Keycloak get admin token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();",
+							"pm.environment.set(\"KEYCLOAK_ADMIN_TOKEN\", jsonData.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "{{KC_CLIENT_SERCRET}}",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "{{KC_CLIENT_ID}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{KC_HOST}}/realms/{{KC_REALM}}/protocol/openid-connect/token",
+					"host": [
+						"{{KC_HOST}}"
+					],
+					"path": [
+						"realms",
+						"{{KC_REALM}}",
+						"protocol",
+						"openid-connect",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Keycloak get list resource",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_ADMIN_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"url": {
+					"raw": "{{KC_HOST}}/realms/{{KC_REALM}}/authz/protection/resource_set",
+					"host": [
+						"{{KC_HOST}}"
+					],
+					"path": [
+						"realms",
+						"{{KC_REALM}}",
+						"authz",
+						"protection",
+						"resource_set"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Keycloak get resource detail",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_ADMIN_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJwRXBZemxhTGhacVBoMU9aem03dVlvMDBMOGZvRDFWdDl3el92emxYV1V3In0.eyJleHAiOjE3MDgzMjY4MTcsImlhdCI6MTcwODMwODgxNywianRpIjoiNmZkN2JmMDQtMDRkYy00NTNhLWFiNWItY2U5ODA5N2ViM2MyIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDkwL3JlYWxtcy9mYW5kZWxvIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjhlYjY0NTZkLTM2OGEtNDUxZC1hMmQ4LWY3Y2JkNmY3Y2YwYyIsInR5cCI6IkJlYXJlciIsImF6cCI6ImZhbmRlbG9fY2xpZW50IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIvKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1mYW5kZWxvIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfSwiZmFuZGVsb19jbGllbnQiOnsicm9sZXMiOlsidW1hX3Byb3RlY3Rpb24iXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJjbGllbnRIb3N0IjoiMTcyLjE5LjAuMSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwicHJlZmVycmVkX3VzZXJuYW1lIjoic2VydmljZS1hY2NvdW50LWZhbmRlbG9fY2xpZW50IiwiY2xpZW50QWRkcmVzcyI6IjE3Mi4xOS4wLjEiLCJjbGllbnRfaWQiOiJmYW5kZWxvX2NsaWVudCJ9.NU8sLz1vOMbp-I4VetxZIuoRnVCDMsOS0ON6SiUsk6G6iZORYL8Pit-VPqMllfshiRCgaV6cFsJOmzqwVA9l0GkV-yeMT2LuToMuZuywAj8dMF5loGboY2Ko4-XLO6hRopBDd3cthW9qEvwq9wC7_6pjBUQNWDgwxAk2WJxEZgpMAcFnkYTYaqtd8iu8WTnEPZUMliZMi_1Z7ENHBEJp4sZKgOJlZF4qzwC-YAy2FPdotDHYdbdOJnbLcxs1DQLslApsUPy69w3LtMcVY1tg6SrlitbsRbxc9UgB-nFU5HdBLxAogusfRed9eAUL9xzmuTkrSPK-5NWcXPnxTYtPwA"
+					}
+				],
+				"url": {
+					"raw": "{{KC_HOST}}/realms/{{KC_REALM}}/authz/protection/resource_set/:id",
+					"host": [
+						"{{KC_HOST}}"
+					],
+					"path": [
+						"realms",
+						"{{KC_REALM}}",
+						"authz",
+						"protection",
+						"resource_set",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "6d119e1e-9bb1-4df8-a89e-225fc9d1e2ee"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Keycloak admin get clients",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_ADMIN_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"url": {
+					"raw": "{{KC_HOST}}/admin/realms/{{KC_REALM}}/clients",
+					"host": [
+						"{{KC_HOST}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{KC_REALM}}",
+						"clients"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Keycloak admin get resources",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_ADMIN_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJwRXBZemxhTGhacVBoMU9aem03dVlvMDBMOGZvRDFWdDl3el92emxYV1V3In0.eyJleHAiOjE3MDg0MTA4MDEsImlhdCI6MTcwODM5MjgwMSwianRpIjoiMjRkMzBjYWYtZGYyOS00NjdiLTljMzMtMTJkYjQ2NTJmMGFlIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDkwL3JlYWxtcy9mYW5kZWxvIiwiYXVkIjpbInJlYWxtLW1hbmFnZW1lbnQiLCJhY2NvdW50Il0sInN1YiI6IjhlYjY0NTZkLTM2OGEtNDUxZC1hMmQ4LWY3Y2JkNmY3Y2YwYyIsInR5cCI6IkJlYXJlciIsImF6cCI6ImZhbmRlbG9fY2xpZW50IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIvKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1mYW5kZWxvIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7InJlYWxtLW1hbmFnZW1lbnQiOnsicm9sZXMiOlsidmlldy1pZGVudGl0eS1wcm92aWRlcnMiLCJ2aWV3LXJlYWxtIiwibWFuYWdlLWlkZW50aXR5LXByb3ZpZGVycyIsImltcGVyc29uYXRpb24iLCJyZWFsbS1hZG1pbiIsImNyZWF0ZS1jbGllbnQiLCJtYW5hZ2UtdXNlcnMiLCJxdWVyeS1yZWFsbXMiLCJ2aWV3LWF1dGhvcml6YXRpb24iLCJxdWVyeS1jbGllbnRzIiwicXVlcnktdXNlcnMiLCJtYW5hZ2UtZXZlbnRzIiwibWFuYWdlLXJlYWxtIiwidmlldy1ldmVudHMiLCJ2aWV3LXVzZXJzIiwidmlldy1jbGllbnRzIiwibWFuYWdlLWF1dGhvcml6YXRpb24iLCJtYW5hZ2UtY2xpZW50cyIsInF1ZXJ5LWdyb3VwcyJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsInZpZXctYXBwbGljYXRpb25zIiwidmlldy1jb25zZW50Iiwidmlldy1ncm91cHMiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsImRlbGV0ZS1hY2NvdW50IiwibWFuYWdlLWNvbnNlbnQiLCJ2aWV3LXByb2ZpbGUiXX0sImZhbmRlbG9fY2xpZW50Ijp7InJvbGVzIjpbInVtYV9wcm90ZWN0aW9uIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwiY2xpZW50SG9zdCI6IjE3Mi4xOS4wLjEiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsInByZWZlcnJlZF91c2VybmFtZSI6InNlcnZpY2UtYWNjb3VudC1mYW5kZWxvX2NsaWVudCIsImNsaWVudEFkZHJlc3MiOiIxNzIuMTkuMC4xIiwiY2xpZW50X2lkIjoiZmFuZGVsb19jbGllbnQifQ.YwtOloNafDbpf9Igio8U7XbMtTa6r0XHCQmvN-3hNi-ojl7PIbiNJlqU8LdlYIST1_zRdy_NlluGkEhRQuEPVC8gqJ3apDmhKJ30KJil-CR866l1efl9QUbzzACUxEHdSf253y_J3Uk9o96PUw2MtA1z9V5cdRdP6NfeTLyh2VgeymfoGc6viFPoXSjaSUMD6XJ7rJpjyRhX6zFBQE_zoKQWF_Qm2YcWj9yojJAEgyJIGkGqP4wQ3GOd3UO41ahcjYM7-xhn5ijqHKAbv-EjCKE2iYu0r2u0Q3ecFVY4-cfMkhJSyd39eh1RS5fMH4pfBRiZdqgsD6_Hp02azcABdQ"
+					}
+				],
+				"url": {
+					"raw": "{{KC_HOST}}/admin/realms/{{KC_REALM}}/clients/:client-uuid/authz/resource-server/resource",
+					"host": [
+						"{{KC_HOST}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{KC_REALM}}",
+						"clients",
+						":client-uuid",
+						"authz",
+						"resource-server",
+						"resource"
+					],
+					"variable": [
+						{
+							"key": "client-uuid",
+							"value": "912f1da9-2cef-408b-bc50-28f2dd665854"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Keycloak admin get permissions",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_ADMIN_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"url": {
+					"raw": "{{KC_HOST}}/admin/realms/{{KC_REALM}}/clients/:client-uuid/authz/resource-server/permission",
+					"host": [
+						"{{KC_HOST}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{KC_REALM}}",
+						"clients",
+						":client-uuid",
+						"authz",
+						"resource-server",
+						"permission"
+					],
+					"variable": [
+						{
+							"key": "client-uuid",
+							"value": "912f1da9-2cef-408b-bc50-28f2dd665854"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Keycloak admin get policies",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_ADMIN_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJwRXBZemxhTGhacVBoMU9aem03dVlvMDBMOGZvRDFWdDl3el92emxYV1V3In0.eyJleHAiOjE3MDg0MTA4MDEsImlhdCI6MTcwODM5MjgwMSwianRpIjoiMjRkMzBjYWYtZGYyOS00NjdiLTljMzMtMTJkYjQ2NTJmMGFlIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDkwL3JlYWxtcy9mYW5kZWxvIiwiYXVkIjpbInJlYWxtLW1hbmFnZW1lbnQiLCJhY2NvdW50Il0sInN1YiI6IjhlYjY0NTZkLTM2OGEtNDUxZC1hMmQ4LWY3Y2JkNmY3Y2YwYyIsInR5cCI6IkJlYXJlciIsImF6cCI6ImZhbmRlbG9fY2xpZW50IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIvKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1mYW5kZWxvIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7InJlYWxtLW1hbmFnZW1lbnQiOnsicm9sZXMiOlsidmlldy1pZGVudGl0eS1wcm92aWRlcnMiLCJ2aWV3LXJlYWxtIiwibWFuYWdlLWlkZW50aXR5LXByb3ZpZGVycyIsImltcGVyc29uYXRpb24iLCJyZWFsbS1hZG1pbiIsImNyZWF0ZS1jbGllbnQiLCJtYW5hZ2UtdXNlcnMiLCJxdWVyeS1yZWFsbXMiLCJ2aWV3LWF1dGhvcml6YXRpb24iLCJxdWVyeS1jbGllbnRzIiwicXVlcnktdXNlcnMiLCJtYW5hZ2UtZXZlbnRzIiwibWFuYWdlLXJlYWxtIiwidmlldy1ldmVudHMiLCJ2aWV3LXVzZXJzIiwidmlldy1jbGllbnRzIiwibWFuYWdlLWF1dGhvcml6YXRpb24iLCJtYW5hZ2UtY2xpZW50cyIsInF1ZXJ5LWdyb3VwcyJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsInZpZXctYXBwbGljYXRpb25zIiwidmlldy1jb25zZW50Iiwidmlldy1ncm91cHMiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsImRlbGV0ZS1hY2NvdW50IiwibWFuYWdlLWNvbnNlbnQiLCJ2aWV3LXByb2ZpbGUiXX0sImZhbmRlbG9fY2xpZW50Ijp7InJvbGVzIjpbInVtYV9wcm90ZWN0aW9uIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwiY2xpZW50SG9zdCI6IjE3Mi4xOS4wLjEiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsInByZWZlcnJlZF91c2VybmFtZSI6InNlcnZpY2UtYWNjb3VudC1mYW5kZWxvX2NsaWVudCIsImNsaWVudEFkZHJlc3MiOiIxNzIuMTkuMC4xIiwiY2xpZW50X2lkIjoiZmFuZGVsb19jbGllbnQifQ.YwtOloNafDbpf9Igio8U7XbMtTa6r0XHCQmvN-3hNi-ojl7PIbiNJlqU8LdlYIST1_zRdy_NlluGkEhRQuEPVC8gqJ3apDmhKJ30KJil-CR866l1efl9QUbzzACUxEHdSf253y_J3Uk9o96PUw2MtA1z9V5cdRdP6NfeTLyh2VgeymfoGc6viFPoXSjaSUMD6XJ7rJpjyRhX6zFBQE_zoKQWF_Qm2YcWj9yojJAEgyJIGkGqP4wQ3GOd3UO41ahcjYM7-xhn5ijqHKAbv-EjCKE2iYu0r2u0Q3ecFVY4-cfMkhJSyd39eh1RS5fMH4pfBRiZdqgsD6_Hp02azcABdQ"
+					}
+				],
+				"url": {
+					"raw": "{{KC_HOST}}/admin/realms/{{KC_REALM}}/clients/:client-uuid/authz/resource-server/policy/b28c79cc-4276-4e99-89e7-d38b4bd74313",
+					"host": [
+						"{{KC_HOST}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{KC_REALM}}",
+						"clients",
+						":client-uuid",
+						"authz",
+						"resource-server",
+						"policy",
+						"b28c79cc-4276-4e99-89e7-d38b4bd74313"
+					],
+					"variable": [
+						{
+							"key": "client-uuid",
+							"value": "912f1da9-2cef-408b-bc50-28f2dd665854"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Keycloak admin get associated Policies",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_ADMIN_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJwRXBZemxhTGhacVBoMU9aem03dVlvMDBMOGZvRDFWdDl3el92emxYV1V3In0.eyJleHAiOjE3MDg0MTA4MDEsImlhdCI6MTcwODM5MjgwMSwianRpIjoiMjRkMzBjYWYtZGYyOS00NjdiLTljMzMtMTJkYjQ2NTJmMGFlIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDkwL3JlYWxtcy9mYW5kZWxvIiwiYXVkIjpbInJlYWxtLW1hbmFnZW1lbnQiLCJhY2NvdW50Il0sInN1YiI6IjhlYjY0NTZkLTM2OGEtNDUxZC1hMmQ4LWY3Y2JkNmY3Y2YwYyIsInR5cCI6IkJlYXJlciIsImF6cCI6ImZhbmRlbG9fY2xpZW50IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIvKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1mYW5kZWxvIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7InJlYWxtLW1hbmFnZW1lbnQiOnsicm9sZXMiOlsidmlldy1pZGVudGl0eS1wcm92aWRlcnMiLCJ2aWV3LXJlYWxtIiwibWFuYWdlLWlkZW50aXR5LXByb3ZpZGVycyIsImltcGVyc29uYXRpb24iLCJyZWFsbS1hZG1pbiIsImNyZWF0ZS1jbGllbnQiLCJtYW5hZ2UtdXNlcnMiLCJxdWVyeS1yZWFsbXMiLCJ2aWV3LWF1dGhvcml6YXRpb24iLCJxdWVyeS1jbGllbnRzIiwicXVlcnktdXNlcnMiLCJtYW5hZ2UtZXZlbnRzIiwibWFuYWdlLXJlYWxtIiwidmlldy1ldmVudHMiLCJ2aWV3LXVzZXJzIiwidmlldy1jbGllbnRzIiwibWFuYWdlLWF1dGhvcml6YXRpb24iLCJtYW5hZ2UtY2xpZW50cyIsInF1ZXJ5LWdyb3VwcyJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsInZpZXctYXBwbGljYXRpb25zIiwidmlldy1jb25zZW50Iiwidmlldy1ncm91cHMiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsImRlbGV0ZS1hY2NvdW50IiwibWFuYWdlLWNvbnNlbnQiLCJ2aWV3LXByb2ZpbGUiXX0sImZhbmRlbG9fY2xpZW50Ijp7InJvbGVzIjpbInVtYV9wcm90ZWN0aW9uIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwiY2xpZW50SG9zdCI6IjE3Mi4xOS4wLjEiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsInByZWZlcnJlZF91c2VybmFtZSI6InNlcnZpY2UtYWNjb3VudC1mYW5kZWxvX2NsaWVudCIsImNsaWVudEFkZHJlc3MiOiIxNzIuMTkuMC4xIiwiY2xpZW50X2lkIjoiZmFuZGVsb19jbGllbnQifQ.YwtOloNafDbpf9Igio8U7XbMtTa6r0XHCQmvN-3hNi-ojl7PIbiNJlqU8LdlYIST1_zRdy_NlluGkEhRQuEPVC8gqJ3apDmhKJ30KJil-CR866l1efl9QUbzzACUxEHdSf253y_J3Uk9o96PUw2MtA1z9V5cdRdP6NfeTLyh2VgeymfoGc6viFPoXSjaSUMD6XJ7rJpjyRhX6zFBQE_zoKQWF_Qm2YcWj9yojJAEgyJIGkGqP4wQ3GOd3UO41ahcjYM7-xhn5ijqHKAbv-EjCKE2iYu0r2u0Q3ecFVY4-cfMkhJSyd39eh1RS5fMH4pfBRiZdqgsD6_Hp02azcABdQ"
+					}
+				],
+				"url": {
+					"raw": "{{KC_HOST}}/admin/realms/{{KC_REALM}}/clients/:client-uuid/authz/resource-server/permission/:permission-uuid/associatedPolicies",
+					"host": [
+						"{{KC_HOST}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{KC_REALM}}",
+						"clients",
+						":client-uuid",
+						"authz",
+						"resource-server",
+						"permission",
+						":permission-uuid",
+						"associatedPolicies"
+					],
+					"variable": [
+						{
+							"key": "client-uuid",
+							"value": "912f1da9-2cef-408b-bc50-28f2dd665854"
+						},
+						{
+							"key": "permission-uuid",
+							"value": "19cc08cd-39ca-4037-8725-c9d7d0167c78"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Keycloak admin get dependent Permission",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_ADMIN_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJwRXBZemxhTGhacVBoMU9aem03dVlvMDBMOGZvRDFWdDl3el92emxYV1V3In0.eyJleHAiOjE3MDg0MTA4MDEsImlhdCI6MTcwODM5MjgwMSwianRpIjoiMjRkMzBjYWYtZGYyOS00NjdiLTljMzMtMTJkYjQ2NTJmMGFlIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDkwL3JlYWxtcy9mYW5kZWxvIiwiYXVkIjpbInJlYWxtLW1hbmFnZW1lbnQiLCJhY2NvdW50Il0sInN1YiI6IjhlYjY0NTZkLTM2OGEtNDUxZC1hMmQ4LWY3Y2JkNmY3Y2YwYyIsInR5cCI6IkJlYXJlciIsImF6cCI6ImZhbmRlbG9fY2xpZW50IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIvKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1mYW5kZWxvIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7InJlYWxtLW1hbmFnZW1lbnQiOnsicm9sZXMiOlsidmlldy1pZGVudGl0eS1wcm92aWRlcnMiLCJ2aWV3LXJlYWxtIiwibWFuYWdlLWlkZW50aXR5LXByb3ZpZGVycyIsImltcGVyc29uYXRpb24iLCJyZWFsbS1hZG1pbiIsImNyZWF0ZS1jbGllbnQiLCJtYW5hZ2UtdXNlcnMiLCJxdWVyeS1yZWFsbXMiLCJ2aWV3LWF1dGhvcml6YXRpb24iLCJxdWVyeS1jbGllbnRzIiwicXVlcnktdXNlcnMiLCJtYW5hZ2UtZXZlbnRzIiwibWFuYWdlLXJlYWxtIiwidmlldy1ldmVudHMiLCJ2aWV3LXVzZXJzIiwidmlldy1jbGllbnRzIiwibWFuYWdlLWF1dGhvcml6YXRpb24iLCJtYW5hZ2UtY2xpZW50cyIsInF1ZXJ5LWdyb3VwcyJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsInZpZXctYXBwbGljYXRpb25zIiwidmlldy1jb25zZW50Iiwidmlldy1ncm91cHMiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsImRlbGV0ZS1hY2NvdW50IiwibWFuYWdlLWNvbnNlbnQiLCJ2aWV3LXByb2ZpbGUiXX0sImZhbmRlbG9fY2xpZW50Ijp7InJvbGVzIjpbInVtYV9wcm90ZWN0aW9uIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwiY2xpZW50SG9zdCI6IjE3Mi4xOS4wLjEiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsInByZWZlcnJlZF91c2VybmFtZSI6InNlcnZpY2UtYWNjb3VudC1mYW5kZWxvX2NsaWVudCIsImNsaWVudEFkZHJlc3MiOiIxNzIuMTkuMC4xIiwiY2xpZW50X2lkIjoiZmFuZGVsb19jbGllbnQifQ.YwtOloNafDbpf9Igio8U7XbMtTa6r0XHCQmvN-3hNi-ojl7PIbiNJlqU8LdlYIST1_zRdy_NlluGkEhRQuEPVC8gqJ3apDmhKJ30KJil-CR866l1efl9QUbzzACUxEHdSf253y_J3Uk9o96PUw2MtA1z9V5cdRdP6NfeTLyh2VgeymfoGc6viFPoXSjaSUMD6XJ7rJpjyRhX6zFBQE_zoKQWF_Qm2YcWj9yojJAEgyJIGkGqP4wQ3GOd3UO41ahcjYM7-xhn5ijqHKAbv-EjCKE2iYu0r2u0Q3ecFVY4-cfMkhJSyd39eh1RS5fMH4pfBRiZdqgsD6_Hp02azcABdQ"
+					}
+				],
+				"url": {
+					"raw": "{{KC_HOST}}/admin/realms/{{KC_REALM}}/clients/:client-uuid/authz/resource-server/permission/scope/:policy-uuid/dependentPolicies",
+					"host": [
+						"{{KC_HOST}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{KC_REALM}}",
+						"clients",
+						":client-uuid",
+						"authz",
+						"resource-server",
+						"permission",
+						"scope",
+						":policy-uuid",
+						"dependentPolicies"
+					],
+					"variable": [
+						{
+							"key": "client-uuid",
+							"value": "912f1da9-2cef-408b-bc50-28f2dd665854"
+						},
+						{
+							"key": "policy-uuid",
+							"value": "90839873-496e-4e08-89e7-6f683d3c4330"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Keycloak admin update permission",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_ADMIN_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"bdb0fa55-1a57-4201-a819-c3c307a7f7a4\",\n    \"name\": \"per::student::read\",\n    \"description\": \"\",\n    \"type\": \"scope\",\n    \"logic\": \"POSITIVE\",\n    \"decisionStrategy\": \"AFFIRMATIVE\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{KC_HOST}}/admin/realms/{{KC_REALM}}/clients/912f1da9-2cef-408b-bc50-28f2dd665854/authz/resource-server/permission/scope/bdb0fa55-1a57-4201-a819-c3c307a7f7a4",
+					"host": [
+						"{{KC_HOST}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{KC_REALM}}",
+						"clients",
+						"912f1da9-2cef-408b-bc50-28f2dd665854",
+						"authz",
+						"resource-server",
+						"permission",
+						"scope",
+						"bdb0fa55-1a57-4201-a819-c3c307a7f7a4"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Keycloak admin evaluate",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_ADMIN_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"roleIds\": [],\n    \"userId\": \"b9149390-919f-45ec-ab8c-88a9ce78a987\",\n    \"resources\": [\n        {\n            \"_id\": \"6d119e1e-9bb1-4df8-a89e-225fc9d1e2ee\",\n            \"scopes\": [\n                {\n                    \"id\": \"ee58c9c3-76de-4840-a65f-080da442beb8\",\n                    \"name\": \"scp::read\"\n                },\n                {\n                    \"id\": \"e153e764-b56f-4331-9e8d-f443f5d78867\",\n                    \"name\": \"scp::write\"\n                }\n            ]\n        }\n    ],\n    \"entitlements\": false,\n    \"context\": {\n        \"attributes\": {}\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{KC_HOST}}/admin/realms/{{KC_REALM}}/clients/912f1da9-2cef-408b-bc50-28f2dd665854/authz/resource-server/policy/evaluate",
+					"host": [
+						"{{KC_HOST}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{KC_REALM}}",
+						"clients",
+						"912f1da9-2cef-408b-bc50-28f2dd665854",
+						"authz",
+						"resource-server",
+						"policy",
+						"evaluate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Book list",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"nameKeyword\": \"John Cena\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{SP_HOST}}/books/list",
+					"host": [
+						"{{SP_HOST}}"
+					],
+					"path": [
+						"books",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Book detail",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{SP_HOST}}/books/123",
+					"host": [
+						"{{SP_HOST}}"
+					],
+					"path": [
+						"books",
+						"123"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Book metadata",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJwRXBZemxhTGhacVBoMU9aem03dVlvMDBMOGZvRDFWdDl3el92emxYV1V3In0.eyJleHAiOjE3MDgzMjU0NzQsImlhdCI6MTcwODMwNzQ3NCwianRpIjoiYzQ2YTA2NDMtY2FlOC00MGZlLWI1OTUtZDUyNTYwMjEzYTFmIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDkwL3JlYWxtcy9mYW5kZWxvIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjRhZDI0NTg0LWUxY2QtNGFiMy1iMTA5LTM3Nzc0ZjE4MGNlOCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImZhbmRlbG9fY2xpZW50Iiwic2Vzc2lvbl9zdGF0ZSI6ImVkZGZlN2RiLWUwYjgtNGZmMi1iODQ2LWNhNDA2ZWU3NmQwYSIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiLyoiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtZmFuZGVsbyIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX0sImZhbmRlbG9fY2xpZW50Ijp7InJvbGVzIjpbIkxpYnJhcmlhbiBSb2xlIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwic2lkIjoiZWRkZmU3ZGItZTBiOC00ZmYyLWI4NDYtY2E0MDZlZTc2ZDBhIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInByZWZlcnJlZF91c2VybmFtZSI6ImxvbmdkayIsImdpdmVuX25hbWUiOiIiLCJmYW1pbHlfbmFtZSI6IiIsImVtYWlsIjoibG9uZ2RrQGdtYWlsLmNvbSJ9.G_9cJl0KXNjblx2jTYJHTOr36oIGyOqOJ0cQAoSCWtf364Mk1DrhDbMzlK6XYtfQyZ9mYgieYFMs8u0v5mUf6ICIkHyPnjXp1Cq6cEkcOsMxmxfqEnkToEn9JI8Crn_Joi9nMNveZssefAprLn_g00G_L_Tt1FdbMIvO4MW1hJ5dJccfb2S0XSYspdciR7IQknzlnOV0Ers2rGiTibLnYVE_i6tnjK5JHa6GahOJ9cRVIB5_WrN6pfFVF-dDZ8YGsuC99cG4YjUQS6S9sTH1wINHuRLhHKDsSn-1QI1kKj8nMuiFvD5bSL96eFOafRPsPVSmVyzQ_3MW4UMLkNmE_w"
+					}
+				],
+				"url": {
+					"raw": "{{SP_HOST}}/books/metadata",
+					"host": [
+						"{{SP_HOST}}"
+					],
+					"path": [
+						"books",
+						"metadata"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Book create",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{SP_HOST}}/books",
+					"host": [
+						"{{SP_HOST}}"
+					],
+					"path": [
+						"books"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Book update",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{SP_HOST}}/books",
+					"host": [
+						"{{SP_HOST}}"
+					],
+					"path": [
+						"books"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Book delete",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{SP_HOST}}/books/1",
+					"host": [
+						"{{SP_HOST}}"
+					],
+					"path": [
+						"books",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Permission get list",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{SP_HOST}}/permissions/list",
+					"host": [
+						"{{SP_HOST}}"
+					],
+					"path": [
+						"permissions",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Permission associate",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"permissionIds\": [\n        \"19cc08cd-39ca-4037-8725-c9d7d0167c78\",\n        \"983f0200-c642-4642-98f5-bff8db21e7d9\",\n        \"bc8e67e2-b4ac-42f7-a22b-7cec0909fe02\",\n        \"bdb0fa55-1a57-4201-a819-c3c307a7f7a4\"\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{SP_HOST}}/permissions/associate",
+					"host": [
+						"{{SP_HOST}}"
+					],
+					"path": [
+						"permissions",
+						"associate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "School summary",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{SP_HOST}}/schools/summary",
+					"host": [
+						"{{SP_HOST}}"
+					],
+					"path": [
+						"schools",
+						"summary"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Permission create groups",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{KEYCLOAK_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{SP_HOST}}/permissions/groups",
+					"host": [
+						"{{SP_HOST}}"
+					],
+					"path": [
+						"permissions",
+						"groups"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "KC_HOST",
+			"value": "http://localhost:8090",
+			"type": "string"
+		},
+		{
+			"key": "KC_REALM",
+			"value": "fandelo",
+			"type": "string"
+		},
+		{
+			"key": "KC_CLIENT_SERCRET",
+			"value": "c3OerSejhc43CIwZKHwVpBQCHy8AJrVQ",
+			"type": "string"
+		},
+		{
+			"key": "KC_CLIENT_ID",
+			"value": "fandelo_client",
+			"type": "string"
+		},
+		{
+			"key": "SP_HOST",
+			"value": "localhost:1501/keycloak",
+			"type": "string"
+		}
+	]
+}

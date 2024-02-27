@@ -3,7 +3,9 @@ package com.keycloak.springmvc.controller;
 import com.keycloak.springmvc.config.KeycloakInstance;
 import com.keycloak.springmvc.config.KeycloakProperties;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,11 +19,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.ClientResource;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.representations.idm.GroupRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
 import org.keycloak.representations.idm.authorization.PolicyEvaluationRequest;
 import org.keycloak.representations.idm.authorization.PolicyEvaluationResponse;
 import org.keycloak.representations.idm.authorization.PolicyRepresentation;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
+import org.keycloak.representations.idm.authorization.RolePolicyRepresentation;
 import org.keycloak.representations.idm.authorization.ScopePermissionRepresentation;
 import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 import org.springframework.http.MediaType;
@@ -45,7 +50,6 @@ import org.springframework.web.bind.annotation.RestController;
 )
 public class PermissionController {
 	
-	private static final String PERMISSION_PREFIX = "per::";
 	private final KeycloakProperties keycloakProperties;
 	private final KeycloakInstance keycloakInstance;
 	
@@ -108,7 +112,8 @@ public class PermissionController {
 						ks.addScopes(s);
 					});
 				if (scopes.isEmpty()) {
-					ks.setStatus(resourceOrScopePermitIds.contains(resource.getId()) ? "PERMIT" : "DENY");
+					ks.setStatus(
+						resourceOrScopePermitIds.contains(resource.getId()) ? "PERMIT" : "DENY");
 				}
 				return ks;
 			})
@@ -344,5 +349,157 @@ public class PermissionController {
 		public KeycloakResource(String id, String name, String displayName) {
 			super(id, name, displayName);
 		}
+	}
+	
+	public static final String ROLE_ONE = "rol::one";
+	public static final String ROLE_SUB1 = "rol::sub1";
+	public static final String ROLE_SUB2 = "rol::sub2";
+	public static final String GROUP_ONE = "grp::one";
+	public static final String GROUP_SUB1 = "grp::sub1";
+	public static final String GROUP_SUB2 = "grp::sub2";
+	public static final String POLICY_ONE = "pol::one";
+	public static final String POLICY_SUB1 = "pol::sub1";
+	public static final String POLICY_SUB2 = "pol::sub2";
+	
+	@PostMapping("/groups")
+	public ResponseEntity<Object> createGroup() {
+		Keycloak keycloak = keycloakInstance.getKeycloakInstance();
+		String realm = keycloakProperties.getRealm();
+		RealmResource realmResource = keycloak.realm(realm);
+		
+		// roles
+		List<RoleRepresentation> roles = realmResource.roles().list();
+		
+		roles.stream().filter(s -> ROLE_ONE.equals(s.getName())).findFirst().ifPresentOrElse(
+			roleRepresentation -> {
+			},
+			() -> {
+				RoleRepresentation role1 = new RoleRepresentation();
+				role1.setName(ROLE_ONE);
+				realmResource.roles().create(role1);
+			});
+		
+		roles.stream().filter(s -> ROLE_SUB1.equals(s.getName())).findFirst().ifPresentOrElse(
+			roleRepresentation -> {
+			},
+			() -> {
+				RoleRepresentation roleSub1 = new RoleRepresentation();
+				roleSub1.setName(ROLE_SUB1);
+				realmResource.roles().create(roleSub1);
+			});
+		
+		roles.stream().filter(s -> ROLE_SUB2.equals(s.getName())).findFirst().ifPresentOrElse(
+			roleRepresentation -> {
+			},
+			() -> {
+				RoleRepresentation roleSub2 = new RoleRepresentation();
+				roleSub2.setName(ROLE_SUB2);
+				realmResource.roles().create(roleSub2);
+			});
+		
+		roles = realmResource.roles().list();
+		RoleRepresentation group1Role =
+			roles.stream().filter(s -> ROLE_ONE.equals(s.getName())).findFirst().orElse(null);
+		RoleRepresentation sub1Role =
+			roles.stream().filter(s -> ROLE_SUB1.equals(s.getName())).findFirst().orElse(null);
+		RoleRepresentation sub2Role =
+			roles.stream().filter(s -> ROLE_SUB2.equals(s.getName())).findFirst().orElse(null);
+		
+		// groups
+		List<GroupRepresentation> groups = realmResource.groups().groups();
+		groups.stream().filter(s -> GROUP_ONE.equals(s.getName())).findFirst().ifPresentOrElse(
+			groupRepresentation -> {
+			},
+			() -> {
+				GroupRepresentation group1 = new GroupRepresentation();
+				group1.setName(GROUP_ONE);
+				realmResource.groups().add(group1);
+			});
+		
+		groups = realmResource.groups().groups();
+		GroupRepresentation groupOne =
+			groups.stream().filter(s -> GROUP_ONE.equals(s.getName())).findFirst().orElse(null);
+		if (groupOne == null) {
+			return ResponseEntity.ok(false);
+		}
+		realmResource.groups().group(groupOne.getId()).roles().realmLevel()
+			.add(Collections.singletonList(group1Role));
+		
+		groups.stream().filter(s -> GROUP_SUB1.equals(s.getName())).findFirst().ifPresentOrElse(
+			groupRepresentation -> {
+			},
+			() -> {
+				GroupRepresentation subGroup1 = new GroupRepresentation();
+				subGroup1.setName(GROUP_SUB1);
+				subGroup1.setParentId(groupOne.getId());
+				realmResource.groups().group(groupOne.getId()).subGroup(subGroup1);
+			});
+		
+		groups.stream().filter(s -> GROUP_SUB2.equals(s.getName())).findFirst().ifPresentOrElse(
+			groupRepresentation -> {
+			},
+			() -> {
+				GroupRepresentation subGroup2 = new GroupRepresentation();
+				subGroup2.setName(GROUP_SUB2);
+				subGroup2.setParentId(groupOne.getId());
+				realmResource.groups().group(groupOne.getId()).subGroup(subGroup2);
+			});
+		
+		List<GroupRepresentation> subGroups = realmResource.groups().group(groupOne.getId())
+				.getSubGroups(null, null, false);
+		subGroups.stream().filter(s -> GROUP_SUB1.equals(s.getName())).findFirst().ifPresent(
+			groupSub1 -> realmResource.groups().group(groupSub1.getId()).roles().realmLevel()
+				.add(Collections.singletonList(sub1Role)));
+		subGroups.stream().filter(s -> GROUP_SUB2.equals(s.getName())).findFirst().ifPresent(
+			groupSub2 -> realmResource.groups().group(groupSub2.getId()).roles().realmLevel()
+				.add(Collections.singletonList(sub2Role)));
+		
+		// policies
+		String clientId = keycloakProperties.getAdminClientUuid();
+		ClientResource clientResource = realmResource.clients().get(clientId);
+		
+		clientResource.authorization().policies().policies().stream()
+			.filter(s -> POLICY_ONE.equals(s.getName())).findFirst().ifPresentOrElse(
+			policyRepresentation -> {
+			},
+			() -> {
+				RolePolicyRepresentation rolePolicy = new RolePolicyRepresentation();
+				rolePolicy.setName(POLICY_ONE);
+				Set<RolePolicyRepresentation.RoleDefinition> roleDefinitions = new HashSet<>();
+				assert group1Role != null;
+				roleDefinitions.add(new RolePolicyRepresentation.RoleDefinition(group1Role.getId(), true));
+				rolePolicy.setRoles(roleDefinitions);
+				clientResource.authorization().policies().role().create(rolePolicy);
+			});
+		
+		clientResource.authorization().policies().policies().stream()
+			.filter(s -> POLICY_SUB1.equals(s.getName())).findFirst().ifPresentOrElse(
+				policyRepresentation -> {
+				},
+				() -> {
+					RolePolicyRepresentation rolePolicy = new RolePolicyRepresentation();
+					rolePolicy.setName(POLICY_SUB1);
+					Set<RolePolicyRepresentation.RoleDefinition> roleDefinitions = new HashSet<>();
+					assert sub1Role != null;
+					roleDefinitions.add(new RolePolicyRepresentation.RoleDefinition(sub1Role.getId(), true));
+					rolePolicy.setRoles(roleDefinitions);
+					clientResource.authorization().policies().role().create(rolePolicy);
+				});
+		
+		clientResource.authorization().policies().policies().stream()
+			.filter(s -> POLICY_SUB2.equals(s.getName())).findFirst().ifPresentOrElse(
+				policyRepresentation -> {
+				},
+				() -> {
+					RolePolicyRepresentation rolePolicy = new RolePolicyRepresentation();
+					rolePolicy.setName(POLICY_SUB2);
+					Set<RolePolicyRepresentation.RoleDefinition> roleDefinitions = new HashSet<>();
+					assert sub2Role != null;
+					roleDefinitions.add(new RolePolicyRepresentation.RoleDefinition(sub2Role.getId(), true));
+					rolePolicy.setRoles(roleDefinitions);
+					clientResource.authorization().policies().role().create(rolePolicy);
+				});
+		
+		return ResponseEntity.ok(true);
 	}
 }
